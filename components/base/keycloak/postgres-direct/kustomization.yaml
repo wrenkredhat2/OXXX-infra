@@ -6,4 +6,4 @@ resources:
   - postgres-manifests.yaml
 
 # 2. Gemeinsame Metadaten für alle Ressourcen
-namespace: keycloak
+namespace: orl-dpro-int-iam
