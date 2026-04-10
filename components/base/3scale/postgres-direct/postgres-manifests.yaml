@@ -1,0 +1,115 @@
+# -----------------------------
+# Secret (credentials)
+# -----------------------------
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-secret
+  annotations:
+    argocd.argoproj.io/sync-wave: "00"
+type: Opaque
+
+stringData:
+  POSTGRESQL_DATABASE: 3scale-db
+  POSTGRESQL_USER: 3scale
+  POSTGRESQL_PASSWORD: supersecret
+  POSTGRESQL_ADMIN_PASSWORD: adminpass
+
+---
+
+# -----------------------------
+# Persistent Volume
+# (hostPath for local/dev only)
+# For production use a StorageClass instead
+# -----------------------------
+#apiVersion: v1
+#kind: PersistentVolume
+#metadata:
+#  name: postgres-pv
+#  annotations:
+#    argocd.argoproj.io/sync-wave: "-01"
+#spec:
+#  capacity:
+#    storage: 5Gi
+#  accessModes:
+#    - ReadWriteOnce
+#  persistentVolumeReclaimPolicy: Retain
+#  hostPath:
+#    path: /data/postgres
+
+---
+
+# -----------------------------
+# Persistent Volume Claim
+# -----------------------------
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  annotations:
+    argocd.argoproj.io/sync-wave: "00"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+
+# -----------------------------
+# Service
+# -----------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  annotations:
+    argocd.argoproj.io/sync-wave: "00"
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: "postgres-port"
+
+---
+# -----------------------------
+# Deployment
+# -----------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  annotations:
+    argocd.argoproj.io/sync-wave: "00"
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: registry.redhat.io/rhel8/postgresql-15@sha256:94182920a14a5175523d40c1bdf1168eaabbb6b494eda0519d3a87916ba937d6
+          ports:
+            - containerPort: 5432
+              name: "postgres-port"
+          envFrom:
+            - secretRef:
+                name: postgres-secret
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+

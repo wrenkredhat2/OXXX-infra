@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: keycloak-sso
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+type: Opaque
+stringData:
+  clientId: 3scale-developer-portal
+  clientSecret: <SECRET>
+  issuer: https://rhbk-dev.apps.cl01.arencloud.com/realms/platform-dev

@@ -1,0 +1,10 @@
+apiVersion: capabilities.3scale.net/v1beta1
+kind: DeveloperAccount
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  name: team-a
+spec:
+  orgName: Team A
+  providerAccountRef:
+    name: mytenant

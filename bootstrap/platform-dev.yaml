@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: platform-dev
+  namespace: openshift-gitops
+spec:
+  project: default
+
+  source:
+    repoURL: https://git.svc.arencloud.com/egevorky/rhdemo.git
+    targetRevision: HEAD
+    path: clusters/dev/infra
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: openshift-gitops
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+
+    syncOptions:
+      - CreateNamespace=false
+
+  revisionHistoryLimit: 3

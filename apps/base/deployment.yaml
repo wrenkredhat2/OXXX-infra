@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-camel
+  labels:
+    app: team-a-camel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: team-a-camel
+  template:
+    metadata:
+      labels:
+        app: team-a-camel
+        app.kubernetes.io/runtime: camel
+    spec:
+      containers:
+        - name: team-a-camel
+          image: image-registry.openshift-image-registry.svc:5000/platform-ci/team-a-camel:latest
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 24
+          env:
+            - name: ENVIRONMENT
+              value: dev

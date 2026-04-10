@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# 1. Ressourcen, die verwaltet werden sollen
+resources:
+  - valkey-config.yaml
+  - valkey-data.yaml
+  - valkey-service.yaml
+  - valkey-deployment.yaml
+
+# 2. Gemeinsame Metadaten für alle Ressourcen
+namespace: 3scale

@@ -1,0 +1,12 @@
+# IDE
+.idea/
+*.iml
+
+# OS/editor artifacts
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Logs
+*.log

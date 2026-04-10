@@ -1,0 +1,49 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: orl-dpro-int-streams
+
+resources:
+  - rolebinding.yaml
+  - ../../../base/kafka-streams
+
+patches:
+
+  - target:
+      kind: Kafka
+      name: orl-clust
+    patch: |-
+      - op: replace
+        path: /spec/kafka/listeners/0/configuration/bootstrap/host
+        value: "orl-clust-kafka-listener1-bootstrap-kafka-streams.apps.cl01.arencloud.com"
+
+  - target:
+      kind: Console
+      name: orl-clust-console
+    patch: |-
+      - op: replace
+        path: /spec/hostname
+        value: kafka-console.apps.dev.orlen.pl
+      - op: replace
+        path: /spec/security/oidc/authServerUrl
+        value: "https://keycloak.apps.dev.orlen.pl/realms/platform-dev"
+      - op: replace
+        path: /spec/security/oidc/clientId
+        value: "kafka-console"
+      - op: add
+        path: /spec/security/oidc/trustStore
+        value:
+          type: PEM
+          content:
+            valueFrom:
+              configMapKeyRef:
+                name: trusted-ca
+                key: ca-bundle.crt
+
+  - target:
+      kind: Secret
+      name: orlen-kafka-console-oidc
+    patch: |-
+      - op: replace
+        path: /stringData/client-secret
+        value: l3Hk6TnbBV2oGoBd3bC2xCnC9lFV1bt0

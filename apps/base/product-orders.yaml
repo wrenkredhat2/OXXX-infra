@@ -1,0 +1,54 @@
+apiVersion: capabilities.3scale.net/v1beta1
+kind: Product
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+  name: orders-api
+spec:
+  name: Orders API
+  systemName: orders-api
+  providerAccountRef:
+    name: mytenant
+
+  deployment:
+    apicastHosted:
+      authentication:
+        oidc:
+          issuerType: keycloak
+          issuerEndpointRef:
+            name: keycloak-issuer
+          jwtClaimWithClientID: azp
+          jwtClaimWithClientIDType: plain
+      productionPublicBaseURL: https://orders-production.apps.cl01.arencloud.com
+      stagingPublicBaseURL: https://orders-staging.apps.cl01.arencloud.com
+
+  applicationPlans:
+    basic:
+      name: Basic
+      published: true
+
+  backendUsages:
+    orders-backend:
+      path: /
+
+  mappingRules:
+    - httpMethod: GET
+      pattern: /health
+      increment: 1
+      metricMethodRef: hits
+
+    - httpMethod: GET
+      pattern: /swagger
+      increment: 1
+      metricMethodRef: hits
+
+    - httpMethod: GET
+      pattern: /api
+      increment: 1
+      metricMethodRef: hits
+
+  metrics:
+    hits:
+      description: Number of API hits
+      friendlyName: Hits
+      unit: hit

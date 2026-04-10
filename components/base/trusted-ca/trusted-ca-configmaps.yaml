@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trusted-ca
+  namespace: 3scale
+  labels:
+    config.openshift.io/inject-trusted-cabundle: "true"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trusted-ca
+  namespace: kafka-streams
+  labels:
+    config.openshift.io/inject-trusted-cabundle: "true"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trusted-ca
+  namespace: keycloak
+  labels:
+    config.openshift.io/inject-trusted-cabundle: "true"

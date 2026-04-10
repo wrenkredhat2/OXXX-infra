@@ -1,0 +1,78 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: team-a-dev
+resources:
+  - ../../../base
+  - rolebinding.yaml
+patches:
+  - target:
+      kind: Deployment
+      name: app-camel
+    patch: |-
+      - op: replace
+        path: /metadata/labels/app
+        value: orders-backend
+      - op: replace
+        path: /metadata/name
+        value: orders-backend
+      - op: replace
+        path: /spec/selector/matchLabels/app
+        value: orders-backend
+      - op: replace
+        path: /spec/template/metadata/labels/app
+        value: orders-backend
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: quay.io/rh-ee-egevorky/rhcl-webapp:v7
+      - op: replace
+        path: /spec/template/spec/containers/0/name
+        value: orders-backend
+
+  - target:
+      kind: Secret
+      name: keycloak-issuer
+    patch: |-
+      - op: replace
+        path: /stringData/issuerEndpoint
+        value: https://zync-dev:eH3S0zGiWhdNLczRQ3kMBdDwYigU1n0q@rhbk-dev.apps.cl01.arencloud.com/realms/platform-dev
+  - target:
+      kind: Secret
+      name: backend-proxy-secret
+    patch: |-
+      - op: replace
+        path: /stringData/secretToken
+        value: 839e63b149f7183eb04ba6825f7cec1f3caca5d2444c51c4259afee359608ad0
+
+  - target:
+      kind: Secret
+      name: mytenant
+    patch: |-
+      - op: replace
+        path: /stringData/adminURL
+        value: https://3scale-admin.apps.cl01.arencloud.com
+      - op: replace
+        path: /stringData/token
+        value: NloiQFBFBioskbVb
+
+  - target:
+      kind: Backend
+      name: orders-backend
+    patch: |-
+      - op: replace
+        path: /spec/privateBaseURL
+        value: http://orders-backend.team-a-dev.svc.cluster.local
+
+  - target:
+      kind: Service
+      name: app-camel-service
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: orders-backend
+      - op: add
+        path: /metadata/labels
+        value: 
+          app: orders-backend
+      - op: replace
+        path: /spec/selector/app
+        value: orders-backend

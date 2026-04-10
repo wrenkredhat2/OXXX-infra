@@ -1,0 +1,12 @@
+apiVersion: capabilities.3scale.net/v1beta1
+kind: Backend
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+  name: orders-backend
+spec:
+  name: Orders Backend
+  systemName: orders-backend
+  privateBaseURL: https://orders-backend.apps.example.com
+  providerAccountRef:
+    name: mytenant

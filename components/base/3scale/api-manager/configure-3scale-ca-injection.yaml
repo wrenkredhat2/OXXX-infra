@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ca-injector
+  annotations:
+    argocd.argoproj.io/sync-wave: "12"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ca-injector
+  annotations:
+    argocd.argoproj.io/sync-wave: "12"
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "patch", "update"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ca-injector
+  annotations:
+    argocd.argoproj.io/sync-wave: "12"
+subjects:
+  - kind: ServiceAccount
+    name: ca-injector
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ca-injector
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: configure-3scale-ca-injection
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+    argocd.argoproj.io/sync-wave: "15"
+spec:
+  backoffLimit: 6
+  template:
+    spec:
+      serviceAccountName: ca-injector
+      restartPolicy: Never
+      containers:
+        - name: ca-injector
+          image: quay.io/openshift/origin-cli:4.15
+          command:
+            - /bin/bash
+            - -ec
+            - |
+              set -euo pipefail
+
+              mount_ca() {
+                local deploy="$1"
+                oc set volume "deployment/${deploy}" \
+                  --add \
+                  --overwrite \
+                  --name=trusted-ca-bundle \
+                  --mount-path=/etc/pki/tls/custom/ca-bundle.crt \
+                  --sub-path=ca-bundle.crt \
+                  --configmap-name=trusted-ca
+              }
+
+              set_ca_env() {
+                local deploy="$1"
+                oc set env "deployment/${deploy}" SSL_CERT_FILE=/etc/pki/tls/custom/ca-bundle.crt
+              }
+
+              for d in zync-que apicast-production apicast-staging; do
+                mount_ca "${d}"
+                set_ca_env "${d}"
+              done
+
+              echo "3scale CA injection configured on zync/apicast deployments."

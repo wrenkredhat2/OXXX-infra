@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: valkey
+  labels:
+    app: valkey
+  annotations:
+    argocd.argoproj.io/sync-wave: "00"
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: valkey
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+
+  template:
+    metadata:
+      labels:
+        app: valkey
+
+    spec:
+      containers:
+        - name: valkey
+          image: registry.redhat.io/rhel9/valkey-8@sha256:f3133d722a20db5896c16a43ac9b30d895d1b2cf27a8f4c2524753f8075c79cf
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 6379
+              name: tcp-6379
+
+          resources:
+            requests:
+              cpu: 50m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+
+          command:
+            - /bin/bash
+            - -lc
+
+          args:
+            - |
+              if [ -f /etc/valkey/valkey.conf ]; then
+                exec valkey-server /etc/valkey/valkey.conf
+              else
+                exec valkey-server --dir /var/lib/valkey
+              fi
+
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/valkey
+            - name: config
+              mountPath: /etc/valkey
+              readOnly: true
+
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -lc
+                - "valkey-cli -h 127.0.0.1 -p 6379 ping | grep -q PONG"
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+          livenessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -lc
+                - "valkey-cli -h 127.0.0.1 -p 6379 ping | grep -q PONG"
+            initialDelaySeconds: 30
+            periodSeconds: 20
+
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: valkey-data
+
+        - name: config
+          configMap:
+            name: valkey-config
+            items:
+              - key: valkey.conf
+                path: valkey.conf

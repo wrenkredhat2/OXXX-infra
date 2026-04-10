@@ -1,0 +1,59 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: 3scale
+
+resources:
+  - rolebinding.yaml
+  - ../../../base/3scale
+
+#namePrefix: prod-
+#commonLabels:
+#  env: production
+
+# Mehr Power für Prod
+patches:
+
+  - target:
+      kind: APIManager
+      name: orlen-apimanager
+    patch: |-
+      - op: replace
+        path: /spec/wildcardDomain
+        value: apps.cl01.arencloud.com
+      - op: replace
+        path: /spec/system/fileStorage/persistentVolumeClaim/storageClassName
+        value: ocs-external-storagecluster-cephfs
+
+  - target:
+      kind: Secret
+      name: backend-redis
+    patch: |-
+      - op: replace
+        path: /stringData/REDIS_STORAGE_URL
+        value: redis://valkey.3scale.svc.cluster.local:6379/0
+      - op: replace
+        path: /stringData/REDIS_QUEUES_URL
+        value: redis://valkey.3scale.svc.cluster.local:6379/1
+
+  - target:
+      kind: Secret
+      name: system-redis
+    patch: |-
+      - op: replace
+        path: /stringData/URL
+        value:   redis://valkey.3scale.svc.cluster.local:6379/2
+
+  - target:
+      kind: Secret
+      name: system-database
+    patch: |-
+      - op: replace
+        path: /stringData/URL
+        value:   postgresql://3scale:supersecret@postgres.3scale.svc.cluster.local:5432/3scale-db
+
+# Festgelegtes Image für Stabilität
+#images:
+#  - name: my-app-image
+#    newName: registry.example.com/app
+#    newTag: "2.4.0-stable"
