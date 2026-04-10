@@ -916,8 +916,8 @@ spec:
           "clientId": "kafka-console",
           "name": "KAFKA CONSOLE",
           "description": "",
-          "rootUrl": "https://kafka-console.apps.cl01.arencloud.com",
-          "adminUrl": "https://kafka-console.apps.cl01.arencloud.com",
+          "rootUrl": "https://kafka-console.apps.dev.orlen.pl",
+          "adminUrl": "https://kafka-console.apps.dev.orlen.pl",
           "baseUrl": "",
           "surrogateAuthRequired": false,
           "enabled": true,
@@ -925,10 +925,10 @@ spec:
           "clientAuthenticatorType": "client-secret",
           "secret": "l3Hk6TnbBV2oGoBd3bC2xCnC9lFV1bt0",
           "redirectUris": [
-            "https://kafka-console.apps.cl01.arencloud.com/*"
+            "https://kafka-console.apps.dev.orlen.pl/*"
           ],
           "webOrigins": [
-            "https://kafka-console.apps.cl01.arencloud.com"
+            "https://kafka-console.apps.dev.orlen.pl"
           ],
           "notBefore": 0,
           "bearerOnly": false,
