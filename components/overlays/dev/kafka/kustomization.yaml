@@ -16,7 +16,7 @@ patches:
     patch: |-
       - op: replace
         path: /spec/kafka/listeners/0/configuration/bootstrap/host
-        value: "orl-clust-kafka-listener1-bootstrap-kafka-streams.apps.cl01.arencloud.com"
+        value: "orl-clust-kafka-listener1-bootstrap-kafka-streams.apps.dev.orlen.pl"
 
   - target:
       kind: Console
