@@ -31,6 +31,9 @@ patches:
       - op: replace
         path: /spec/security/oidc/clientId
         value: "kafka-console"
+      - op: replace
+        path: /spec/kafkaClusters/0/namespace
+        value: orl-dpro-int-streams
       - op: add
         path: /spec/security/oidc/trustStore
         value:
