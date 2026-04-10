@@ -5,6 +5,7 @@ namespace: orl-dpro-int-api
 
 resources:
   - rolebinding.yaml
+  - ../../../base/trusted-ca
   - ../../../base/3scale
 
 #namePrefix: prod-

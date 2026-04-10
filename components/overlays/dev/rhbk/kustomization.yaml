@@ -5,6 +5,7 @@ namespace: orl-dpro-int-iam
 
 resources:
   - rolebinding.yaml
+  - ../../../base/trusted-ca
   - ../../../base/keycloak
   - platform-dev-realm-import.yaml
 

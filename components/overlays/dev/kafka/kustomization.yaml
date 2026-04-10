@@ -5,6 +5,7 @@ namespace: orl-dpro-int-streams
 
 resources:
   - rolebinding.yaml
+  - ../../../base/trusted-ca
   - ../../../base/kafka-streams
 
 patches:
