@@ -24,7 +24,7 @@ patches:
         value: apps.dev.orlen.pl
       - op: replace
         path: /spec/system/fileStorage/persistentVolumeClaim/storageClassName
-        value: ocs-external-storagecluster-cephfs
+        value: ocs-storagecluster-cephfs
 
   - target:
       kind: Secret
