@@ -31,10 +31,10 @@ patches:
     patch: |-
       - op: replace
         path: /stringData/REDIS_STORAGE_URL
-        value: redis://valkey.3scale.svc.cluster.local:6379/0
+        value: redis://valkey.orl-dpro-int-api.svc.cluster.local:6379/0
       - op: replace
         path: /stringData/REDIS_QUEUES_URL
-        value: redis://valkey.3scale.svc.cluster.local:6379/1
+        value: redis://valkey.orl-dpro-int-api.svc.cluster.local:6379/1
 
   - target:
       kind: Secret
@@ -42,7 +42,7 @@ patches:
     patch: |-
       - op: replace
         path: /stringData/URL
-        value:   redis://valkey.3scale.svc.cluster.local:6379/2
+        value:   redis://valkey.orl-dpro-int-api.svc.cluster.local:6379/2
 
   - target:
       kind: Secret
@@ -50,7 +50,7 @@ patches:
     patch: |-
       - op: replace
         path: /stringData/URL
-        value:   postgresql://3scale:supersecret@postgres.3scale.svc.cluster.local:5432/3scale-db
+        value:   postgresql://3scale:supersecret@postgres.orl-dpro-int-api.svc.cluster.local:5432/3scale-db
 
   - target:
       kind: Secret

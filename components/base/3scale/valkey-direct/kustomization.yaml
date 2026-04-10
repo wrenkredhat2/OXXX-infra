@@ -9,4 +9,4 @@ resources:
   - valkey-deployment.yaml
 
 # 2. Gemeinsame Metadaten für alle Ressourcen
-namespace: 3scale
+namespace: orl-dpro-int-api
