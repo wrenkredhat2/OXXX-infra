@@ -1,6 +1,0 @@
-apiVersion: image.toolkit.dev/v1alpha1
-kind: ImageTag
-metadata:
-  name: placeholder
-spec:
-  newTag: latest

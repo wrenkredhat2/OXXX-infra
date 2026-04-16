@@ -56,6 +56,26 @@ spec:
             - |
               set -euo pipefail
 
+              wait_for_trusted_ca_bundle() {
+                local attempts=60
+                local sleep_seconds=5
+                local i
+                local bundle
+
+                for i in $(seq 1 "${attempts}"); do
+                  bundle="$(oc get configmap/trusted-ca -o jsonpath='{.data.ca-bundle\.crt}' 2>/dev/null || true)"
+                  if [ -n "${bundle}" ]; then
+                    echo "trusted-ca contains ca-bundle.crt"
+                    return 0
+                  fi
+                  echo "Waiting for trusted-ca bundle (${i}/${attempts})..."
+                  sleep "${sleep_seconds}"
+                done
+
+                echo "ERROR: trusted-ca ConfigMap does not contain ca-bundle.crt after waiting."
+                exit 1
+              }
+
               mount_ca() {
                 local deploy="$1"
                 oc set volume "deployment/${deploy}" \
@@ -72,9 +92,78 @@ spec:
                 oc set env "deployment/${deploy}" SSL_CERT_FILE=/etc/pki/tls/custom/ca-bundle.crt
               }
 
-              for d in zync-que apicast-production apicast-staging; do
-                mount_ca "${d}"
-                set_ca_env "${d}"
+              inject_deployment() {
+                local deploy="$1"
+                echo "Injecting trusted CA into ${deploy}"
+                mount_ca "${deploy}"
+                set_ca_env "${deploy}"
+              }
+
+              known_deployments=(
+                apicast-production
+                apicast-staging
+                backend-cron
+                backend-listener
+                backend-worker
+                system-app
+                system-sidekiq
+                system-searchd
+                system-sphinx
+                zync
+                zync-que
+              )
+
+              discovered_with_label() {
+                oc get deployments -l app=3scale-api-management \
+                  -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' 2>/dev/null || true
+              }
+
+              discovered_from_known() {
+                local d
+                for d in "${known_deployments[@]}"; do
+                  if oc get "deployment/${d}" >/dev/null 2>&1; then
+                    echo "${d}"
+                  fi
+                done
+              }
+
+              wait_for_trusted_ca_bundle
+
+              injected=""
+              max_attempts=30
+              sleep_seconds=10
+              attempt=1
+              while [ "${attempt}" -le "${max_attempts}" ]; do
+                targets="$(
+                  {
+                    discovered_with_label
+                    discovered_from_known
+                  } | sed '/^$/d' | sort -u
+                )"
+
+                if [ -z "${targets}" ]; then
+                  echo "No 3scale deployments found yet (${attempt}/${max_attempts}); retrying..."
+                  sleep "${sleep_seconds}"
+                  attempt=$((attempt + 1))
+                  continue
+                fi
+
+                while IFS= read -r deploy; do
+                  [ -z "${deploy}" ] && continue
+                  if ! grep -qxF "${deploy}" <<< "${injected}"; then
+                    inject_deployment "${deploy}"
+                    injected="${injected}"$'\n'"${deploy}"
+                  fi
+                done <<< "${targets}"
+
+                sleep "${sleep_seconds}"
+                attempt=$((attempt + 1))
               done
 
-              echo "3scale CA injection configured on zync/apicast deployments."
+              if [ -z "${injected}" ]; then
+                echo "ERROR: no 3scale deployments were found for CA injection."
+                exit 1
+              fi
+
+              echo "3scale CA injection configured for deployments:"
+              echo "${injected}" | sed '/^$/d' | sed 's/^/- /'
