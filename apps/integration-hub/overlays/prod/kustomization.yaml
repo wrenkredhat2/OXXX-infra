@@ -9,5 +9,5 @@ namespace: integration-hub-ns
 resources:
   - ../../base
 images:
-  - name: quay.io/rh-ee-egevorky/integration-hub-service
+  - name: quay.apps.dev.orlen.pl/dpro-int/kafka-nbp
     newTag: 1.0.0-snapshot-7f34fb6a57b7
