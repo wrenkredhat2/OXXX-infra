@@ -9,5 +9,5 @@ namespace: orl-dpro-int-flows
 resources:
   - ../../base
 images:
-  - name: quay.apps.dev.orlen.pl/dpro-int/kafka-nbp:latest
+  - name: quay.apps.dev.orlen.pl/dpro-int/kafka-nbp
     newTag: 1.0.0-snapshot-7f34fb6a57b7
