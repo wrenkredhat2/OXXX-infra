@@ -10,4 +10,4 @@ resources:
   - ../../base
 images:
   - name: quay.apps.dev.orlen.pl/dpro-int/kafka-nbp
-    newTag: 1.0.0-snapshot-7f34fb6a57b7
+    newTag: 1.0.0-snapshot-f22f93d7356f
