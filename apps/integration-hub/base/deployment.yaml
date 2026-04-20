@@ -23,7 +23,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: integration-hub
-          image: quay.io/rh-ee-egevorky/integration-hub-service:latest
+          image: quay.apps.dev.orlen.pl/dpro-int/kafka-nbp:latest
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
