@@ -24,6 +24,8 @@ spec:
       containers:
         - name: integration-hub
           image: quay.apps.dev.orlen.pl/dpro-int/kafka-nbp:latest
+          imagePullSecrets: 
+            - name: dpro-int-int-pull-secret
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
