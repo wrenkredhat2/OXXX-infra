@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-status-external
+spec:
+  selector:
+    app: postgres-status # Must match the label in your Deployment
+  ports:
+    - protocol: TCP
+      port: 5432        # Port the client connects to
+      targetPort: 5432  # Port the Postgres container is listening on
+  type: LoadBalancer
+ 

@@ -10,6 +10,7 @@ resources:
   - kafka-status-db-secret.yaml
   - kafka-nbp-secret.yaml
   - ../../base
+  - db-node-port.yaml  
 
 images:
   - name: quay.apps.dev.orlen.pl/dpro-int/kafka-nbp
