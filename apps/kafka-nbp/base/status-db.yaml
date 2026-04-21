@@ -1,0 +1,99 @@
+#-----------------------------
+# PLs put the respecttive database secret into an overlay
+#-----------------------------
+
+
+#-----------------------------
+#Persistent Volume
+#(hostPath for local/dev only)
+#For production use a StorageClass instead
+#-----------------------------
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-pv
+  annotations:
+    argocd.argoproj.io/sync-wave: "-01"
+spec:
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /data/postgres
+
+---
+
+# -----------------------------
+# Persistent Volume Claim
+# -----------------------------
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-status-pvc
+  annotations:
+    argocd.argoproj.io/sync-wave: "00"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+
+# -----------------------------
+# Service
+# -----------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-status
+  annotations:
+    argocd.argoproj.io/sync-wave: "00"
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres-status
+  ports:
+    - port: 5432
+      targetPort: "postgres-port"
+
+---
+# -----------------------------
+# Deployment
+# -----------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-status
+  annotations:
+    argocd.argoproj.io/sync-wave: "00"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-status
+  template:
+    metadata:
+      labels:
+        app: postgres-status
+    spec:
+      containers:
+        - name: ppostgres-status
+          image: registry.redhat.io/rhel8/postgresql-15@sha256:94182920a14a5175523d40c1bdf1168eaabbb6b494eda0519d3a87916ba937d6
+          ports:
+            - containerPort: 5432
+              name: "postgres-port"
+          envFrom:
+            - secretRef:
+                name: postgres-status-secret
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-status-pvc
+
