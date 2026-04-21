@@ -8,38 +8,38 @@
 #(hostPath for local/dev only)
 #For production use a StorageClass instead
 #-----------------------------
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: postgres-pv
-  annotations:
-    argocd.argoproj.io/sync-wave: "-01"
-spec:
-  capacity:
-    storage: 100Mi
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  hostPath:
-    path: /data/postgres
+#apiVersion: v1
+#kind: PersistentVolume
+#metadata:
+#  name: postgres-pv
+#  annotations:
+#    argocd.argoproj.io/sync-wave: "-01"
+#spec:
+#  capacity:
+#    storage: 100Mi
+#  accessModes:
+#    - ReadWriteOnce
+#  persistentVolumeReclaimPolicy: Retain
+#  hostPath:
+#    path: /data/postgres
 
 ---
 
 # -----------------------------
 # Persistent Volume Claim
 # -----------------------------
-#apiVersion: v1
-#kind: PersistentVolumeClaim
-#metadata:
-#  name: postgres-status-pvc
-#  annotations:
-#    argocd.argoproj.io/sync-wave: "00"
-#spec:
-#  accessModes:
-#    - ReadWriteOnce
-#  resources:
-#    requests:
-#      storage: 5Gi
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-status-pvc
+  annotations:
+    argocd.argoproj.io/sync-wave: "00"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
 
 ---
 
