@@ -28,18 +28,18 @@ spec:
 # -----------------------------
 # Persistent Volume Claim
 # -----------------------------
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: postgres-status-pvc
-  annotations:
-    argocd.argoproj.io/sync-wave: "00"
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 5Gi
+#apiVersion: v1
+#kind: PersistentVolumeClaim
+#metadata:
+#  name: postgres-status-pvc
+#  annotations:
+#    argocd.argoproj.io/sync-wave: "00"
+#spec:
+#  accessModes:
+#    - ReadWriteOnce
+#  resources:
+#    requests:
+#      storage: 5Gi
 
 ---
 
