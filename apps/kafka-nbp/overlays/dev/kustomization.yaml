@@ -8,7 +8,7 @@ kind: Kustomization
 namespace: orl-dpro-int-flows
 resources:
   - ../../base
-  - integration-hub-secret.yaml
+  - kafka-nbp-secret.yaml
 images:
   - name: quay.apps.dev.orlen.pl/dpro-int/kafka-nbp
     newTag: 1.0.0-snapshot-f22f93d7356f
