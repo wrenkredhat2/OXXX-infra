@@ -34,7 +34,7 @@ spec:
               app: valkey-ha
         - maxSkew: 1
           topologyKey: kubernetes.io/hostname
-          whenUnsatisfiable: ScheduleAnyway
+          whenUnsatisfiable: ScheduleAnyway #w środowisku test/prod DoNotSchedule - zmienić!!!
           labelSelector:
             matchLabels:
               app: valkey-ha
