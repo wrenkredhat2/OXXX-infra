@@ -13,6 +13,9 @@ spec:
     gatewayReadinessPeriod: 30
     onlineLivenessPeriod: 5
     onlineReadinessPeriod: 10
+  config:
+    online:
+      projectSelector: xxxxxx
   logging:
     gatewayLogLevel: info
     maskIPAddresses: 'false'
