@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: valkey
+$patch: delete
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: valkey-data
+$patch: delete
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: valkey
+$patch: delete
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: valkey-config
+$patch: delete

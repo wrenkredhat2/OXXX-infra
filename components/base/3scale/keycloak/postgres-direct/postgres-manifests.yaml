@@ -6,8 +6,8 @@ metadata:
     argocd.argoproj.io/sync-wave: "00"
 type: Opaque
 stringData:
-  POSTGRESQL_DATABASE: 3scale-db
-  POSTGRESQL_USER: 3scale
+  POSTGRESQL_DATABASE: keycloak-db
+  POSTGRESQL_USER: keycloak
   POSTGRESQL_PASSWORD: supersecret
   POSTGRESQL_ADMIN_PASSWORD: adminpass
 ---

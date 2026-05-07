@@ -1,11 +1,10 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: orl-dpro-int-streams
+namespace: kafka-streams
 
 resources:
   - rolebinding.yaml
-  - ../../../base/trusted-ca
   - ../../../base/kafka-streams
 
 patches:
@@ -16,7 +15,109 @@ patches:
     patch: |-
       - op: replace
         path: /spec/kafka/listeners/0/configuration/bootstrap/host
-        value: "orl-clust-kafka-listener1-bootstrap-kafka-streams.apps.dev.orlen.pl"
+        value: "orl-clust-kafka-listener1-bootstrap-kafka-streams.apps.cl01.arencloud.com"
+      - op: add
+        path: /spec/kafka/config
+        value:
+          default.replication.factor: 3
+          min.insync.replicas: 2
+      - op: add
+        path: /spec/kafka/template/pod/topologySpreadConstraints
+        value:
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                strimzi.io/cluster: orl-clust
+                strimzi.io/name: orl-clust-kafka
+          - maxSkew: 1
+            topologyKey: kubernetes.io/hostname
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                strimzi.io/cluster: orl-clust
+                strimzi.io/name: orl-clust-kafka
+      - op: add
+        path: /spec/kafka/template/kafkaContainer/resources
+        value:
+          requests:
+            cpu: "1"
+            memory: 2Gi
+          limits:
+            cpu: "2"
+            memory: 4Gi
+      - op: add
+        path: /spec/entityOperator/template/pod/topologySpreadConstraints
+        value:
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                strimzi.io/cluster: orl-clust
+                strimzi.io/name: orl-clust-entity-operator
+          - maxSkew: 1
+            topologyKey: kubernetes.io/hostname
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                strimzi.io/cluster: orl-clust
+                strimzi.io/name: orl-clust-entity-operator
+      - op: add
+        path: /spec/entityOperator/template/topicOperatorContainer/resources
+        value:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+      - op: add
+        path: /spec/entityOperator/template/userOperatorContainer/resources
+        value:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+
+  - target:
+      kind: KafkaNodePool
+      name: orl-clust-pl
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+      - op: add
+        path: /spec/resources
+        value:
+          requests:
+            cpu: "1"
+            memory: 2Gi
+          limits:
+            cpu: "2"
+            memory: 4Gi
+      - op: add
+        path: /spec/template
+        value:
+          pod:
+            topologySpreadConstraints:
+              - maxSkew: 1
+                topologyKey: topology.kubernetes.io/zone
+                whenUnsatisfiable: DoNotSchedule
+                labelSelector:
+                  matchLabels:
+                    strimzi.io/cluster: orl-clust
+                    strimzi.io/name: orl-clust-kafka
+              - maxSkew: 1
+                topologyKey: kubernetes.io/hostname
+                whenUnsatisfiable: DoNotSchedule
+                labelSelector:
+                  matchLabels:
+                    strimzi.io/cluster: orl-clust
+                    strimzi.io/name: orl-clust-kafka
 
   - target:
       kind: Console
@@ -24,16 +125,13 @@ patches:
     patch: |-
       - op: replace
         path: /spec/hostname
-        value: kafka-console.apps.dev.orlen.pl
+        value: kafka-console.apps.cl01.arencloud.com
       - op: replace
         path: /spec/security/oidc/authServerUrl
-        value: "https://keycloak.apps.dev.orlen.pl/realms/platform-dev"
+        value: "https://rhbk-dev.apps.cl01.arencloud.com/realms/platform-dev"
       - op: replace
         path: /spec/security/oidc/clientId
         value: "kafka-console"
-      - op: replace
-        path: /spec/kafkaClusters/0/namespace
-        value: orl-dpro-int-streams
       - op: add
         path: /spec/security/oidc/trustStore
         value:

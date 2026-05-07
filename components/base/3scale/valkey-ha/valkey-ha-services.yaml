@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: valkey-ha-headless
+  annotations:
+    argocd.argoproj.io/sync-wave: "00"
+spec:
+  clusterIP: None
+  selector:
+    app: valkey-ha
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: redis
+    - name: sentinel
+      port: 26379
+      targetPort: sentinel
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: valkey-sentinel
+  annotations:
+    argocd.argoproj.io/sync-wave: "00"
+spec:
+  selector:
+    app: valkey-ha
+  ports:
+    - name: sentinel
+      port: 26379
+      targetPort: sentinel
