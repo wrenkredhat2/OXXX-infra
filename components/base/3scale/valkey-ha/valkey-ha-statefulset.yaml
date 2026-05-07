@@ -6,7 +6,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "00"
 spec:
   serviceName: valkey-ha-headless
-  replicas: 3
+  replicas: 2 #na prod musi być 3(zmiana w overlays)
   selector:
     matchLabels:
       app: valkey-ha
