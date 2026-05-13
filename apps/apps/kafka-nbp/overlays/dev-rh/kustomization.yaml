@@ -1,0 +1,17 @@
+# Managed Manifest
+# File: platform/apps/integration-hub/overlays/prod/kustomization.yaml
+# Purpose: Environment overlay customizing base application resources for target environment.
+# Owner: integration-hub platform team
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: orl-dpro-int-flows
+resources:
+  - kafka-status-db-secret.yaml
+  - kafka-nbp-secret.yaml
+  - ../../base
+  - db-node-port.yaml  
+
+images:
+  - name: quay.apps.dev.orlen.pl/dpro-int/kafka-nbp
+    newTag: 1.1.1-snapshot-1e493db87dfc

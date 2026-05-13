@@ -1,0 +1,40 @@
+# Managed Manifest
+# File: platform/apps/kafka-nbp/base/deployment.yaml
+# Purpose: Base application manifest defining deployable workload resources.
+# Owner: kafka-nbp platform team
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-nbp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-nbp
+  template:
+    metadata:
+      labels:
+        app: kafka-nbp
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+#      imagePullSecrets: 
+#        - name: dpro-int-int-pull-secret
+      containers:
+        - name: kafka-nbp
+          # image: quay.apps.dev.orlen.pl/dpro-int/kafka-nbp:latest
+          image: image-registry.openshift-image-registry.svc:5000/orl-dpro-int-flows/integration-hub-service:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          ports:
+            - containerPort: 8080
+          envFrom:
+          - secretRef:
+              name: kafka-nbp-runtime

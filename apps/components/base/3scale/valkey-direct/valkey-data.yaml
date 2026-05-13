@@ -1,0 +1,15 @@
+# --- Persistent Volume Claim ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: valkey-data
+  labels:
+    app: valkey
+  annotations:
+    argocd.argoproj.io/sync-wave: "00"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi

@@ -1,0 +1,75 @@
+apiVersion: k8s.keycloak.org/v2alpha1
+kind: Keycloak
+metadata:
+  name: orlen-int-kc
+  namespace: keycloak
+  annotations:
+    argocd.argoproj.io/sync-wave: "11"
+spec:
+#  instances: 1
+#  db:
+#    vendor: postgres
+#    host: postgres-db
+#    usernameSecret:
+#      name: keycloak-db-secret
+#      key: username
+#    passwordSecret:
+#      name: keycloak-db-secret
+#      key: password
+#    urlSecret: 
+#      name: keycloak-db-secret
+#      key: db_url
+
+
+  instances: 1
+
+  # Todo
+  # define Admin password
+  # Try out default password
+  bootstrapAdmin:
+    user:
+      secret: keycloak-bootstrap-admin
+
+  db:
+    vendor: postgres
+    host: postgres
+    database: keycloak-db
+    port: 5432
+    usernameSecret:
+      name: keycloak-db-secret
+      key: username
+    passwordSecret:
+      name: keycloak-db-secret
+      key: password
+
+  http:
+    httpEnabled: true
+
+  additionalOptions:
+    - name: metrics-enabled
+      value: "true"
+    - name: health-enabled
+      value: "true"
+
+  hostname:
+    hostname: xkeycloak.apps.cluster-492gk.492gk.sandbox2076.opentlc.comx
+
+#    hostnameStrict: false
+
+  proxy:
+    headers: xforwarded
+
+  ingress:
+    enabled: true
+
+
+
+#  hostname:
+#    hostname: keycloak.apps.cluster-492gk.492gk.sandbox2076.opentlc.com
+#  additionalOptions:
+#    - name: http-relative-path
+##      value: /auth
+#    - name: http-enabled
+#      value: "true"
+#  ingress:
+#    enabled: true

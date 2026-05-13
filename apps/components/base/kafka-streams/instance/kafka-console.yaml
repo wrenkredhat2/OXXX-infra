@@ -1,0 +1,77 @@
+apiVersion: console.streamshub.github.com/v1alpha1
+kind: Console
+metadata:
+  name: orl-clust-console
+  namespace: kafka-streams
+spec:
+  hostname: kafka-console.apps.cluster-492gk.492gk.sandbox2076.opentlc.com
+  security:
+    oidc:
+      authServerUrl: https://<keycloak-host>/realms/<realm-name>
+      clientId: kafka-console
+      clientSecret:
+        valueFrom:
+          secretKeyRef:
+            name: orlen-kafka-console-oidc
+            key: client-secret
+
+    subjects:
+      - claim: groups
+        include:
+          - kafka-admins
+        roleNames:
+          - administrators
+      - claim: groups
+        include:
+          - kafka-auditors
+        roleNames:
+          - auditors
+
+    roles:
+      - name: administrators
+        rules:
+          - resources:
+              - kafkas
+            privileges:
+              - ALL
+      - name: auditors
+        rules:
+          - resources:
+              - kafkas
+            privileges:
+              - ALL
+  kafkaClusters:
+    - listener: internal
+      name: orl-clust
+      namespace: kafka-streams
+      security:
+        roles:
+          - name: administrators
+            rules:
+              - resources:
+                  - topics
+                  - topics/records
+                  - consumerGroups
+                  - rebalances
+                  - nodes/configs
+                  - nodes
+                privileges:
+                  - GET
+                  - LIST
+              - resources:
+                  - consumerGroups
+                  - rebalances
+                privileges:
+                  - UPDATE
+          - name: auditors
+            rules:
+              - resources:
+                  - topics
+                  - topics/records
+                  - consumerGroups
+                  - rebalances
+                  - nodes/configs
+                  - nodes
+                privileges:
+                  - GET
+                  - LIST

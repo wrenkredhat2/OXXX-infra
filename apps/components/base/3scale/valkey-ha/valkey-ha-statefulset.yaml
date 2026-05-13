@@ -1,0 +1,149 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: valkey-ha
+  annotations:
+    argocd.argoproj.io/sync-wave: "00"
+spec:
+  serviceName: valkey-ha-headless
+  replicas: 2 #na prod musi być 3(zmiana w overlays)
+  selector:
+    matchLabels:
+      app: valkey-ha
+  template:
+    metadata:
+      labels:
+        app: valkey-ha
+    spec:
+      terminationGracePeriodSeconds: 30
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app: valkey-ha
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: valkey-ha
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule #w środowisku test/prod DoNotSchedule(ScheduleAnyway) - zmienić!!!
+          labelSelector:
+            matchLabels:
+              app: valkey-ha
+      containers:
+        - name: valkey
+          image: registry.redhat.io/rhel9/valkey-8@sha256:f3133d722a20db5896c16a43ac9b30d895d1b2cf27a8f4c2524753f8075c79cf
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/bash
+            - -ec
+            - |
+              ORDINAL="${HOSTNAME##*-}"
+              cat >/tmp/valkey.conf <<CONF
+              bind 0.0.0.0
+              port 6379
+              protected-mode no
+              dir /data
+              appendonly yes
+              save 900 1
+              save 300 10
+              save 60 10000
+              CONF
+
+              if [ "${ORDINAL}" != "0" ]; then
+                echo "replicaof valkey-ha-0.valkey-ha-headless.3scale.svc.cluster.local 6379" >>/tmp/valkey.conf
+              fi
+
+              exec valkey-server /tmp/valkey.conf
+          ports:
+            - name: redis
+              containerPort: 6379
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - valkey-cli -h 127.0.0.1 -p 6379 ping | grep -q PONG
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - valkey-cli -h 127.0.0.1 -p 6379 ping | grep -q PONG
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          volumeMounts:
+            - name: data
+              mountPath: /data
+
+        - name: sentinel
+          image: registry.redhat.io/rhel9/valkey-8@sha256:f3133d722a20db5896c16a43ac9b30d895d1b2cf27a8f4c2524753f8075c79cf
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/bash
+            - -ec
+            - |
+              cat >/tmp/sentinel.conf <<CONF
+              bind 0.0.0.0
+              port 26379
+              protected-mode no
+              dir /tmp
+              sentinel resolve-hostnames yes
+              sentinel monitor valkey-master valkey-ha-0.valkey-ha-headless.3scale.svc.cluster.local 6379 2
+              sentinel down-after-milliseconds valkey-master 5000
+              sentinel failover-timeout valkey-master 10000
+              sentinel parallel-syncs valkey-master 1
+              CONF
+
+              exec valkey-sentinel /tmp/sentinel.conf
+          ports:
+            - name: sentinel
+              containerPort: 26379
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - valkey-cli -h 127.0.0.1 -p 26379 ping | grep -q PONG
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - valkey-cli -h 127.0.0.1 -p 26379 ping | grep -q PONG
+            initialDelaySeconds: 30
+            periodSeconds: 20
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi

@@ -1,0 +1,273 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: orl-dpro-int-api
+
+resources:
+  - rolebinding.yaml
+  - ../../../base/3scale
+  - ../../../base/3scale/valkey-ha
+
+#patchesStrategicMerge:
+#  - remove-base-valkey.yaml
+
+#namePrefix: prod-
+#commonLabels:
+#  env: production
+
+# Mehr Power für Prod
+patches:
+
+  - target:
+      kind: APIManager
+      name: orlen-apimanager
+    patch: |-
+      - op: replace
+        path: /spec/wildcardDomain
+        value: apps.dev.orlen.pl
+      - op: replace
+        path: /spec/system/fileStorage/persistentVolumeClaim/storageClassName
+        value: ocs-storagecluster-cephfs
+      - op: replace
+        path: /spec/apicast/productionSpec/replicas
+        value: 2
+      - op: add
+        path: /spec/apicast/productionSpec/topologySpreadConstraints
+        value:
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                threescale_component: apicast-production
+                threescale_component: apicast
+                threescale_component_element: production
+          - maxSkew: 1
+            topologyKey: kubernetes.io/hostname
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                threescale_component: apicast-production
+                threescale_component: apicast
+                threescale_component_element: production
+      - op: replace
+        path: /spec/apicast/stagingSpec/replicas
+        value: 2
+      - op: add
+        path: /spec/apicast/stagingSpec/topologySpreadConstraints
+        value:
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                threescale_component: apicast-staging
+                threescale_component: apicast
+                threescale_component_element: staging
+          - maxSkew: 1
+            topologyKey: kubernetes.io/hostname
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                threescale_component: apicast-staging
+                threescale_component: apicast
+                threescale_component_element: staging
+      - op: replace
+        path: /spec/backend/listenerSpec/replicas
+        value: 2
+      - op: add
+        path: /spec/backend/listenerSpec/topologySpreadConstraints
+        value:
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                threescale_component: backend-listener
+                threescale_component: backend
+                threescale_component_element: listener
+          - maxSkew: 1
+            topologyKey: kubernetes.io/hostname
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                threescale_component: backend-listener
+                threescale_component: backend
+                threescale_component_element: listener
+      - op: replace
+        path: /spec/backend/workerSpec/replicas
+        value: 2
+      - op: add
+        path: /spec/backend/workerSpec/topologySpreadConstraints
+        value:
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                threescale_component: backend-worker
+                threescale_component: backend
+                threescale_component_element: worker
+          - maxSkew: 1
+            topologyKey: kubernetes.io/hostname
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                threescale_component: backend-worker
+                threescale_component: backend
+                threescale_component_element: worker
+      - op: replace
+        path: /spec/system/appSpec/replicas
+        value: 2
+      - op: add
+        path: /spec/system/appSpec/topologySpreadConstraints
+        value:
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                threescale_component: system-app
+                threescale_component: system
+                threescale_component_element: app
+          - maxSkew: 1
+            topologyKey: kubernetes.io/hostname
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                threescale_component: system-app
+                threescale_component: system
+                threescale_component_element: app
+      - op: replace
+        path: /spec/system/sidekiqSpec/replicas
+        value: 2
+      - op: add
+        path: /spec/system/sidekiqSpec/topologySpreadConstraints
+        value:
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                threescale_component: system-sidekiq
+                threescale_component: system
+                threescale_component_element: sidekiq
+          - maxSkew: 1
+            topologyKey: kubernetes.io/hostname
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                threescale_component: system-sidekiq
+                threescale_component: system
+                threescale_component_element: sidekiq
+      - op: replace
+        path: /spec/zync/appSpec/replicas
+        value: 2
+      - op: add
+        path: /spec/zync/appSpec/topologySpreadConstraints
+        value:
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                threescale_component: zync
+                threescale_component_element: zync
+          - maxSkew: 1
+            topologyKey: kubernetes.io/hostname
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                threescale_component: zync
+                threescale_component_element: zync
+      - op: replace
+        path: /spec/zync/queSpec/replicas
+        value: 2
+      - op: add
+        path: /spec/zync/queSpec/topologySpreadConstraints
+        value:
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                threescale_component: zync-que
+                threescale_component: zync
+                threescale_component_element: zync-que
+          - maxSkew: 1
+            topologyKey: kubernetes.io/hostname
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                threescale_component: zync-que
+                threescale_component: zync
+                threescale_component_element: zync-que
+
+  - target:
+      kind: Secret
+      name: backend-redis
+    patch: |-
+      - op: replace
+        path: /stringData/REDIS_STORAGE_URL
+        value: redis://valkey-master/0
+      - op: replace
+        path: /stringData/REDIS_QUEUES_URL
+        value: redis://valkey-master/1
+      - op: add
+        path: /stringData/REDIS_STORAGE_SENTINEL_HOSTS
+        value: valkey-ha-0.valkey-ha-headless.orl-dpro-int-api.svc.cluster.local:26379,valkey-ha-1.valkey-ha-headless.orl-dpro-int-api.svc.cluster.local:26379
+      - op: add
+        path: /stringData/REDIS_STORAGE_SENTINEL_ROLE
+        value: master
+      - op: add
+        path: /stringData/REDIS_QUEUES_SENTINEL_HOSTS
+        value: valkey-ha-0.valkey-ha-headless.orl-dpro-int-api.svc.cluster.local:26379,valkey-ha-1.valkey-ha-headless.orl-dpro-int-api.svc.cluster.local:26379
+      - op: add
+        path: /stringData/REDIS_QUEUES_SENTINEL_ROLE
+        value: master
+
+  - target:
+      kind: Secret
+      name: system-redis
+    patch: |-
+      - op: replace
+        path: /stringData/URL
+        value: redis://valkey-master/2
+      - op: replace
+        path: /stringData/SENTINEL_HOSTS
+        value: valkey-ha-0.valkey-ha-headless.orl-dpro-int-api.svc.cluster.local:26379,valkey-ha-1.valkey-ha-headless.orl-dpro-int-api.svc.cluster.local:26379
+      - op: replace
+        path: /stringData/SENTINEL_ROLE
+        value: master
+
+  - target:
+      kind: Secret
+      name: system-database
+    patch: |-
+      - op: replace
+        path: /stringData/URL
+        value:   postgresql://3scale:supersecret@postgres.orl-dpro-int-api.svc.cluster.local:5432/3scale-db
+
+  - target:
+      kind: Secret
+      name: keycloak-sso
+    patch: |-
+      - op: replace
+        path: /stringData/clientSecret
+        value: jJKkcwO1B2yyEtVbN1kpqFgxUT92O5xO
+      - op: replace
+        path: /stringData/issuer
+        value: https://keycloak.apps.dev.orlen.pl/realms/platform-dev
+  - target:
+      kind: Job
+      name: configure-3scale-sso
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/env/1/value
+        value: apps.dev.orlen.pl
+
+# Festgelegtes Image für Stabilität
+#images:
+#  - name: my-app-image
+#    newName: registry.example.com/app
+#    newTag: "2.4.0-stable"

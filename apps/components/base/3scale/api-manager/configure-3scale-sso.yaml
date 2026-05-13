@@ -1,0 +1,109 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: configure-3scale-sso
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+    argocd.argoproj.io/sync-wave: "14"
+spec:
+  backoffLimit: 10
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: sso-config
+          image: registry.redhat.io/ubi9:9.7
+          volumeMounts:
+            - name: trusted-ca-bundle
+              mountPath: /etc/pki/ca-trust/extracted/pem
+              readOnly: true
+          command:
+            - /bin/bash
+            - -ec
+            - |
+              set -euo pipefail
+              
+              ADMIN_URL="https://3scale-admin.${MASTER_DOMAIN}"
+              echo "Using ${ADMIN_URL}"
+              
+              api_get() {
+                curl -fsS "${ADMIN_URL}$1?access_token=${TOKEN}"
+              }
+              
+              api_post() {
+                curl -fsS -X POST "${ADMIN_URL}$1" \
+                  -H "Content-Type: application/x-www-form-urlencoded" \
+                  --data-urlencode "access_token=${TOKEN}" \
+                  "${@:2}"
+              }
+              
+              echo "=== Admin Portal SSO ==="
+              ADMIN_JSON="$(api_get "/admin/api/account/authentication_providers.json")"
+              
+              if echo "${ADMIN_JSON}" | grep -q "${CLIENT_ID}"; then
+                echo "Admin Portal SSO already exists."
+              else
+                echo "Creating Admin Portal SSO..."
+                api_post "/admin/api/account/authentication_providers.json" \
+                  --data-urlencode "authentication_provider[kind]=keycloak" \
+                  --data-urlencode "authentication_provider[name]=Keycloak" \
+                  --data-urlencode "authentication_provider[client_id]=${CLIENT_ID}" \
+                  --data-urlencode "authentication_provider[client_secret]=${CLIENT_SECRET}" \
+                  --data-urlencode "authentication_provider[site]=${ISSUER}"
+              fi
+              
+              echo "=== Developer Portal SSO ==="
+              DEV_JSON="$(api_get "/admin/api/authentication_providers.xml" || true)"
+              
+              if echo "${DEV_JSON}" | grep -q "${CLIENT_ID}"; then
+                echo "Developer Portal SSO already exists."
+              else
+                echo "Creating Developer Portal SSO..."
+              
+                api_post "/admin/api/authentication_providers.xml" \
+                  --data-urlencode "kind=keycloak" \
+                  --data-urlencode "name=Keycloak" \
+                  --data-urlencode "system_name=keycloak-devportal" \
+                  --data-urlencode "client_id=${CLIENT_ID}" \
+                  --data-urlencode "client_secret=${CLIENT_SECRET}" \
+                  --data-urlencode "site=${ISSUER}" \
+                  --data-urlencode "published=true"
+              
+                echo "Developer Portal SSO created."
+              fi
+              
+              echo "Done."
+
+          env:
+            - name: TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: system-seed
+                  key: ADMIN_ACCESS_TOKEN
+            - name: MASTER_DOMAIN
+              value: ""
+            - name: CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-sso
+                  key: clientId
+            - name: CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-sso
+                  key: clientSecret
+            - name: ISSUER
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-sso
+                  key: issuer
+            - name: CURL_CA_BUNDLE
+              value: /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+      volumes:
+        - name: trusted-ca-bundle
+          configMap:
+            name: trusted-ca
+            items:
+              - key: ca-bundle.crt
+                path: tls-ca-bundle.pem

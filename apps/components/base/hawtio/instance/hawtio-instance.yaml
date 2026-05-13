@@ -1,0 +1,33 @@
+apiVersion: hawt.io/v2
+kind: Hawtio
+metadata:
+  name: hawtio
+  namespace: hawtio
+spec:
+  auth:
+    clientCertCheckSchedule: '* */12 * * *'
+    clientCertExpirationPeriod: 24
+    internalSSL: true
+  healthChecks:
+    gatewayLivenessPeriod: 120
+    gatewayReadinessPeriod: 30
+    onlineLivenessPeriod: 5
+    onlineReadinessPeriod: 10
+  config:
+    online:
+      projectSelector: xxxxxx
+  logging:
+    gatewayLogLevel: info
+    maskIPAddresses: 'false'
+    onlineLogLevel: info
+  replicas: 1
+  resources:
+    limits:
+      cpu: '1'
+      memory: 200Mi
+    requests:
+      cpu: 200m
+      memory: 32Mi
+  type: Cluster
+  routeHostName: hawtio.apps.cluster-492gk.492gk.sandbox2076.opentlc.com
+  version: '1.12'
