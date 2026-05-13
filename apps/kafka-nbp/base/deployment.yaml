@@ -25,7 +25,7 @@ spec:
         - name: dpro-int-int-pull-secret
       containers:
         - name: kafka-nbp
-          image: quay.apps.dev.orlen.pl/dpro-int/kafka-nbp:latest
+          image: image-registry.openshift-image-registry.svc:5000/orl-dpro-int-flows/integration-hub-service@sha256:35bc9bbbe7091be83338e3546d625d4ab55c0f2996aa6a9ac7b0cde49f270e08
 
           imagePullPolicy: IfNotPresent
           securityContext:
