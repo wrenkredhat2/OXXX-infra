@@ -26,7 +26,7 @@ spec:
       containers:
         - name: kafka-nbp
           # image: quay.apps.dev.orlen.pl/dpro-int/kafka-nbp:latest
-          image: image-registry.openshift-image-registry.svc:5000/orl-dpro-int-flows/integration-hub-service:latest
+          image: integration-hub-service:latest
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
