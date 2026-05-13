@@ -20,7 +20,7 @@ patches:
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/image
-        value: quarkus.openshift.tag=image-registry.openshift-image-registry.svc:5000/orl-dpro-int-flows/integration-hub-service@sha256:b9fdc112e98ab29064d0ff5bdd03f82efd5e9a939fbb94f7611b56cd015ae182
+        value: image-registry.openshift-image-registry.svc:5000/orl-dpro-int-flows/integration-hub-service@sha256:b9fdc112e98ab29064d0ff5bdd03f82efd5e9a939fbb94f7611b56cd015ae182
 
 images:
   - name: quay.apps.dev.orlen.pl/dpro-int/kafka-nbp
