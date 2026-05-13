@@ -10,7 +10,17 @@ resources:
   - kafka-status-db-secret.yaml
   - kafka-nbp-secret.yaml
   - ../../base
-  - db-node-port.yaml  
+  - db-node-port.yaml
+
+patches:
+
+  - target:
+      kind: Deployment
+      name: kafka-nbp
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: image-registry.openshift-image-registry.svc:5000/orl-dpro-int-flows/integration-hub-service@sha256:d5666f5ec203ef22e5299f972b81b02bea09cb1275e4fd96fc09aaa267d41579
 
 images:
   - name: quay.apps.dev.orlen.pl/dpro-int/kafka-nbp
